@@ -5,7 +5,7 @@
 const FACE_MATCH_THRESHOLD = 0.6; 
 
 // 2. กำหนด Path ของโฟลเดอร์เก็บโมเดล
-const MODELS_URI = '/models'; 
+const MODELS_URI = '/face-checkin-app/models';
 
 // 3. กำหนดชื่อผู้ใช้และโฟลเดอร์ภาพตัวอย่าง
 // ชื่อโฟลเดอร์ต้องตรงกับชื่อ Label
