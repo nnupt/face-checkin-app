@@ -1,0 +1,35 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f2f5;
+}
+
+.container {
+    text-align: center;
+}
+
+#video, #canvas {
+    position: absolute; /* ทำให้ซ้อนทับกัน */
+}
+
+#canvas {
+    z-index: 10;
+}
+
+#status {
+    margin-top: 260px; /* เว้นระยะจากวิดีโอ */
+    font-weight: bold;
+    color: #007bff;
+}
+
+#checkin-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
