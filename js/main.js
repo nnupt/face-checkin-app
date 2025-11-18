@@ -25,7 +25,7 @@ async function loadLabeledFaceDescriptors() {
         const userDescriptors = [];
         
         // เราจะพยายามโหลดภาพ 3 ภาพต่อผู้ใช้หนึ่งคน
-        for (let j = 1; j <= 3; j++) {
+        for (let j = 1; j <= 5; j++) {
             try {
                 // สร้าง Object Image HTML
                 const img = await faceapi.fetchImage(`/images/${label}/${j}.jpg`);
