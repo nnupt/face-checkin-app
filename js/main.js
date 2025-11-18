@@ -1,4 +1,4 @@
-// js/main.js
+// js/main.js - โค้ดฉบับสมบูรณ์สำหรับ GitHub Pages
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -7,8 +7,8 @@ const checkinBtn = document.getElementById('checkin-btn');
 
 let faceMatcher = null; // 1. ประกาศตัวแปรสำหรับเก็บฐานข้อมูล Descriptors
 
-// 0. โหลดโมเดลเริ่มต้น
-// (ต้องตรวจสอบว่าคุณมีโฟลเดอร์ models/ ที่มีไฟล์โมเดลถูกต้องแล้ว)
+// **แก้ไข 1.1: แก้ไขพาธโมเดล**
+// ใช้ MODELS_URI ที่ถูกแก้ไขใน config.js แล้ว (ต้องแน่ใจว่าใน config.js คือ /face-checkin-app/models)
 Promise.all([
     faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URI),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URI),
@@ -24,11 +24,14 @@ async function loadLabeledFaceDescriptors() {
         const label = USER_LABELS[i]; 
         const userDescriptors = [];
         
-        // เราจะพยายามโหลดภาพ 3 ภาพต่อผู้ใช้หนึ่งคน
-        for (let j = 1; j <= 5; j++) {
+        // **แก้ไข 2.1: เปลี่ยนเป็น 5 รูป (j <= 5)**
+        for (let j = 1; j <= 5; j++) { 
             try {
-                // สร้าง Object Image HTML
-                const img = await faceapi.fetchImage(`/images/${label}/${j}.jpg`);
+                // **แก้ไข 2.2: แก้ไขพาธไฟล์ภาพ:** เพิ่มชื่อ Repository '/face-checkin-app'
+                // นี่คือการแก้ไขปัญหา Error 404 (Not Found) สำหรับไฟล์ภาพ
+                const imagePath = `/face-checkin-app/images/${label}/${j}.jpg`; 
+                
+                const img = await faceapi.fetchImage(imagePath);
                 
                 // ตรวจจับและสร้าง Face Descriptor
                 const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
@@ -39,8 +42,8 @@ async function loadLabeledFaceDescriptors() {
                     console.warn(`No face detected in image: ${label}/${j}.jpg`);
                 }
             } catch (err) {
-                // หากไฟล์ภาพหาไม่พบ (404) จะเกิด Error
-                console.error(`Error loading image ${label}/${j}.jpg. CHECK FOLDER PATHS:`, err); 
+                // แสดง Error ที่ชัดเจนขึ้น
+                console.error(`❌ Error loading image ${label}/${j}.jpg. Check if file exists at: /images/${label}/${j}.jpg`, err); 
             }
         }
         
@@ -64,7 +67,8 @@ async function startVideo() {
     faceMatcher = await loadLabeledFaceDescriptors(); 
     
     if (faceMatcher.labeledDescriptors.length === 0) {
-        statusDiv.textContent = '⚠️ WARNING: No face descriptors loaded. Recognition will not work. Check "images/" folder.';
+        // หากไม่มี Descriptors เลย จะเกิด Error: expected atleast one input
+        statusDiv.textContent = '⚠️ WARNING: No face descriptors loaded. Recognition will not work. Check "images/" folder and file names (1.jpg to 5.jpg).';
     } else {
         statusDiv.textContent = `Successfully loaded ${faceMatcher.labeledDescriptors.length} user labels. Starting video...`;
     }
@@ -92,6 +96,7 @@ async function detectFace() {
     const displaySize = { width: video.width, height: video.height };
     faceapi.matchDimensions(canvas, displaySize);
 
+    // ตรวจจับใบหน้า
     const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
     
     // ล้างและแสดงผล
