@@ -1,7 +1,19 @@
 // js/main.js
 
-// 1. ประกาศตัวแปรสำหรับเก็บฐานข้อมูล Descriptors
-let faceMatcher = null; 
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const statusDiv = document.getElementById('status');
+const checkinBtn = document.getElementById('checkin-btn');
+
+let faceMatcher = null; // 1. ประกาศตัวแปรสำหรับเก็บฐานข้อมูล Descriptors
+
+// 0. โหลดโมเดลเริ่มต้น
+// (ต้องตรวจสอบว่าคุณมีโฟลเดอร์ models/ ที่มีไฟล์โมเดลถูกต้องแล้ว)
+Promise.all([
+    faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URI),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URI),
+    faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URI)
+]).then(startVideo);
 
 // 2. ฟังก์ชันโหลดและเข้ารหัสใบหน้า
 async function loadLabeledFaceDescriptors() {
@@ -9,7 +21,7 @@ async function loadLabeledFaceDescriptors() {
     
     // วนลูปตามชื่อผู้ใช้ที่กำหนดใน config.js
     for (let i = 0; i < USER_LABELS.length; i++) {
-        const label = USER_LABELS[i]; // เช่น 'john_doe'
+        const label = USER_LABELS[i]; 
         const userDescriptors = [];
         
         // เราจะพยายามโหลดภาพ 3 ภาพต่อผู้ใช้หนึ่งคน
@@ -27,7 +39,8 @@ async function loadLabeledFaceDescriptors() {
                     console.warn(`No face detected in image: ${label}/${j}.jpg`);
                 }
             } catch (err) {
-                console.error(`Error loading image ${label}/${j}.jpg:`, err);
+                // หากไฟล์ภาพหาไม่พบ (404) จะเกิด Error
+                console.error(`Error loading image ${label}/${j}.jpg. CHECK FOLDER PATHS:`, err); 
             }
         }
         
@@ -44,7 +57,6 @@ async function loadLabeledFaceDescriptors() {
 
 
 // 3. ปรับฟังก์ชันเริ่มต้น (startVideo)
-
 async function startVideo() {
     statusDiv.textContent = 'Models loaded. Loading face descriptors...';
     
@@ -52,23 +64,39 @@ async function startVideo() {
     faceMatcher = await loadLabeledFaceDescriptors(); 
     
     if (faceMatcher.labeledDescriptors.length === 0) {
-        statusDiv.textContent = 'WARNING: No face descriptors loaded. Recognition will not work.';
+        statusDiv.textContent = '⚠️ WARNING: No face descriptors loaded. Recognition will not work. Check "images/" folder.';
     } else {
         statusDiv.textContent = `Successfully loaded ${faceMatcher.labeledDescriptors.length} user labels. Starting video...`;
     }
     
-    // ... (ส่วนเปิดกล้องเหมือนเดิม)
+    // เริ่มเปิดกล้องและขอสิทธิ์
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }) 
+        .then(stream => {
+            video.srcObject = stream;
+            video.addEventListener('play', () => {
+                statusDiv.textContent = 'Video started. Detecting faces...';
+                
+                // เริ่มวนลูปตรวจจับใบหน้า
+                setInterval(detectFace, 100);
+            });
+        })
+        .catch(err => {
+            statusDiv.textContent = '❌ Error accessing camera: ' + err.message + '. Make sure you are on HTTPS.';
+            console.error(err);
+        });
 }
 
 
 // 4. ปรับฟังก์ชันตรวจจับใบหน้า (detectFace)
-
 async function detectFace() {
-    // ... (โค้ดส่วนต้นเหมือนเดิม)
-    
-    const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+    const displaySize = { width: video.width, height: video.height };
+    faceapi.matchDimensions(canvas, displaySize);
 
-    // ... (โค้ดส่วนปรับขนาด)
+    const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+    
+    // ล้างและแสดงผล
+    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     
     if (resizedDetections) {
         // --- ส่วนที่เพิ่มสำหรับการระบุตัวตน ---
@@ -98,4 +126,39 @@ async function detectFace() {
         checkinBtn.disabled = true;
     }
 }
-// ... (ส่วน Check-in ต่อไป)
+
+
+// 5. การเช็คอิน (ต้องส่งไปยัง Backend Service)
+checkinBtn.addEventListener('click', () => {
+    const userLabel = checkinBtn.dataset.userLabel; 
+    
+    if (!userLabel) {
+        alert('Cannot check-in. Please wait for face recognition.');
+        return;
+    }
+    
+    // ⚠️ ต้องเปลี่ยน URL นี้เป็น Netlify Function/Backend ของคุณเอง
+    const checkinUrl = 'https://[YOUR_BACKEND_SITE_NAME].netlify.app/.netlify/functions/checkin'; 
+    
+    statusDiv.textContent = `Checking in ${userLabel}...`;
+    
+    fetch(checkinUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            user_label: userLabel
+        })
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              alert(`Check-in successful! Welcome, ${userLabel}.`);
+              statusDiv.textContent = `Check-in successful for ${userLabel}.`;
+          } else {
+              alert('Check-in failed: ' + data.message);
+              statusDiv.textContent = 'Check-in failed.';
+          }
+      }).catch(err => {
+          alert('Network Error connecting to check-in service.');
+          statusDiv.textContent = 'Connection error. Check console for details.';
+      });
+});
