@@ -2,7 +2,7 @@
 
 // 1. กำหนดค่าความแม่นยำ (Threshold)
 // ค่าที่ต่ำกว่าหมายถึงการจับคู่ที่เข้มงวดกว่า
-const FACE_MATCH_THRESHOLD = 0.6; 
+const FACE_MATCH_THRESHOLD = 0.25; 
 
 // 2. กำหนด Path ของโฟลเดอร์เก็บโมเดล
 const MODELS_URI = '/face-checkin-app/models';
