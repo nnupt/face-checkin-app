@@ -8,15 +8,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>Face Check-in System</h1>
-        
-        <video id="video" width="320" height="240" autoplay muted></video>
-        
-        <canvas id="canvas" width="320" height="240"></canvas>
-        
-        <div id="status">Loading models...</div>
-        <button id="checkin-btn" disabled>Check-in</button>
+    <!-- เพิ่ม div ตัวนี้เข้ามา -->
+    <div class="video-wrapper"> 
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
     </div>
+    <!-- ----------------------- -->
+    <div id="status">สถานะปัจจุบัน</div>
+    <button id="checkin-btn">เช็คอิน</button>
+</div>
     
     <script src="js/face-api.min.js"></script>
     <script src="js/config.js"></script> 
