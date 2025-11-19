@@ -1,20 +1,47 @@
 body {
-    font-family: sans-serif;
+    font-family: 'Inter', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh; /* ใช้ min-height แทน height เพื่อให้ยืดหยุ่น */
     margin: 0;
     background-color: #f0f2f5;
+    padding: 20px; /* เพิ่ม padding เพื่อไม่ให้เนื้อหาชิดขอบจอเกินไป */
 }
 
 .container {
     text-align: center;
+    width: 100%; /* ให้ Container กว้างเต็มที่ */
+    max-width: 600px; /* กำหนดขนาดสูงสุดสำหรับหน้าจอเดสก์ท็อป */
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ------------------------------------- */
+/* การปรับปรุงหลัก: ทำให้ Video/Canvas ตอบสนอง */
+/* ------------------------------------- */
+
+.video-wrapper {
+    position: relative;
+    width: 100%; /* ให้ wrapper กว้างเต็ม container */
+    padding-top: 75%; /* กำหนดอัตราส่วนภาพเป็น 4:3 (75% ของความกว้าง) */
+    margin: 0 auto 20px auto; /* จัดให้อยู่ตรงกลางและเว้นด้านล่าง */
+    border-radius: 8px;
+    overflow: hidden; /* ซ่อนส่วนเกิน */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 #video, #canvas {
     position: absolute; /* ทำให้ซ้อนทับกัน */
+    top: 0;
+    left: 0;
+    width: 100%; /* ขนาดเต็ม wrapper */
+    height: 100%; /* ขนาดเต็ม wrapper */
+    object-fit: cover; /* ทำให้วิดีโอ/canvas คลุมพื้นที่ทั้งหมด */
+    border-radius: 8px; /* ใช้ขอบมนจาก wrapper */
 }
 
 #canvas {
@@ -22,14 +49,48 @@ body {
 }
 
 #status {
-    margin-top: 260px; /* เว้นระยะจากวิดีโอ */
+    margin-top: 20px; /* ลด margin-top ให้ไหลตามหลัง wrapper */
+    margin-bottom: 20px;
+    font-size: 1.1em;
     font-weight: bold;
-    color: #007bff;
+    color: #3b82f6; /* ใช้สีน้ำเงินที่ทันสมัยขึ้น */
+    padding: 8px;
+    border: 1px solid #dbeafe;
+    border-radius: 6px;
+    background-color: #eff6ff;
 }
 
 #checkin-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin-top: 10px;
+    padding: 12px 24px;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    background-color: #3b82f6;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    box-shadow: 0 4px #1d4ed8;
+}
+
+#checkin-btn:hover {
+    background-color: #2563eb;
+}
+
+#checkin-btn:active {
+    background-color: #1e40af;
+    transform: translateY(2px);
+    box-shadow: 0 2px #1d4ed8;
+}
+
+/* Media Query สำหรับมือถือ (ถ้าจำเป็นต้องปรับเพิ่มเติม) */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+        max-width: 100%;
+    }
+    #checkin-btn {
+        width: 100%;
+        padding: 15px;
+    }
 }
